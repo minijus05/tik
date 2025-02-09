@@ -559,51 +559,67 @@ class TokenHandler:
         """Tikrina Syrax Scanner metrikas ir siunčia įspėjimus jei reikia"""
         try:
             if not self.telegram_client:
-                logger.error(f"[2025-02-09 10:49:01] Telegram client not initialized")
+                logger.error(f"[{datetime.now(timezone.utc)}] Telegram client not initialized")
                 return
+                
             gmgn_url = f"https://gmgn.ai/sol/token/{token_address}"
 
-            # Tikriname visas metrikas iš karto
+            # Ištraukiam visas metrikas
             name_count = int(syrax_data.get('same_name_count', 0))
             website_count = int(syrax_data.get('same_website_count', 0))
             telegram_count = int(syrax_data.get('same_telegram_count', 0))
             twitter_count = int(syrax_data.get('same_twitter_count', 0))
             dev_tokens = int(syrax_data.get('dev_created_tokens', 0))
             
-                        
-            logger.debug(f"[2025-02-09 10:49:01] All metrics - name: {name_count}, website: {website_count}, telegram: {telegram_count}, twitter: {twitter_count}, dev_tokens: {dev_tokens}, bundle: {bundle_count}/{bundle_supply}%/{bundle_curve}%/{bundle_sol}SOL, dev_bought: {dev_bought_tokens}/{dev_bought_sol}/{dev_bought_percentage}%/{dev_bought_curve}%")
+            # Bundle metrikos
+            bundle_data = syrax_data.get('bundle', {})
+            bundle_count = bundle_data.get('count', 0)
+            bundle_supply = bundle_data.get('supply_percentage', 0)
+            bundle_curve = bundle_data.get('curve_percentage', 0)
+            bundle_sol = bundle_data.get('sol', 0)
+            
+            # Dev bought metrikos
+            dev_bought = syrax_data.get('dev_bought', {})
+            dev_bought_tokens = dev_bought.get('tokens', 0)
+            dev_bought_sol = dev_bought.get('sol', 0)
+            dev_bought_percentage = dev_bought.get('percentage', 0)
+            dev_bought_curve = dev_bought.get('curve_percentage', 0)
             
             warnings = []
             
-            # Tikriname ar metrikos yra mažesnės už limitą
-            if name_count < 500:
-                warnings.append(f"🔍 Same name count: {name_count}")
-            if website_count < 500:
-                warnings.append(f"🌐 Same website count: {website_count}")
-            if telegram_count < 500:
-                warnings.append(f"📱 Same telegram count: {telegram_count}")
-            if twitter_count < 500:
-                warnings.append(f"🐦 Same twitter count: {twitter_count}")
+            # Tikriname metrikas su tinkamais threshold'ais
+            if 0 <= name_count <= 5:  # Įtartina jei mažai panašių vardų
+                warnings.append(f"🔍 Low same name count: {name_count}")
+            if 0 <= website_count <= 5:  # Įtartina jei mažai panašių svetainių
+                warnings.append(f"🌐 Low same website count: {website_count}")
+            if 0 <= telegram_count <= 5:
+                warnings.append(f"📱 Low same telegram count: {telegram_count}")
+            if 0 <= twitter_count <= 5:
+                warnings.append(f"🐦 Low same twitter count: {twitter_count}")
                 
-            
+            # Bundle ir dev metrikos
+            if bundle_supply > 10:  # Įtartina jei bundle supply didelis
+                warnings.append(f"📦 High bundle supply: {bundle_supply}%")
+            if dev_bought_percentage > 5:  # Įtartina jei dev daug superka
+                warnings.append(f"👨‍💻 High dev buying: {dev_bought_percentage}%")
             
             # Jei yra įspėjimų, siunčiame žinutę
             if warnings:
                 message = (
-                    f"⚠️ METRICS ALERT!\\n\\n"
-                    f"Token Address: <code>{token_address}</code>\\n\\n"
-                    f"Links:\\n"
-                    f"🔗 <a href='{gmgn_url}'>View on GMGN.AI</a>\\n\\n"
-                    f"Metrics:\\n"
-                    f"{chr(10).join(warnings)}\\n\\n"
+                    f"⚠️ METRICS ALERT!\n\n"
+                    f"Token Address: <code>{token_address}</code>\n\n"
+                    f"Links:\n"
+                    f"🔗 <a href='{gmgn_url}'>View on GMGN.AI</a>\n\n"
+                    f"Metrics:\n"
+                    f"{chr(10).join(warnings)}\n\n"
                     f"<i>Tap token address to copy</i>"
                 )
                 
                 await self._send_notification(message, parse_mode='HTML')
-                logger.info(f"[2025-02-09 10:49:01] Sent metrics alert for {token_address}")
+                logger.info(f"[{datetime.now(timezone.utc)}] Sent metrics alert for {token_address}")
                     
         except Exception as e:
-            logger.error(f"[2025-02-09 10:49:01] Error checking Syrax metrics: {str(e)}")
+            logger.error(f"[{datetime.now(timezone.utc)}] Error checking Syrax metrics: {str(e)}")
 
    
 
