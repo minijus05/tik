@@ -282,16 +282,16 @@ class TokenMetrics:
     total_scans: int = 0      # Vietoj bool = False
 
     # Nauji laukai iš Syrax Scanner
-    dev_bought_tokens: float = 0.0,
-    dev_bought_sol: float = 0.0,
-    dev_created_tokens: int = 0,
-    same_name_count: int = 0,
-    same_website_count: int = 0,
-    same_telegram_count: int = 0,
-    same_twitter_count: int = 0,
-    bundle_count: int = 0,
-    bundle_supply_percentage: float = 0.0,
-    bundle_curve_percentage: float = 0.0,
+    dev_bought_tokens: float = 0.0
+    dev_bought_sol: float = 0.0
+    dev_created_tokens: int = 0
+    same_name_count: int = 0
+    same_website_count: int = 0
+    same_telegram_count: int = 0
+    same_twitter_count: int = 0
+    bundle_count: int = 0
+    bundle_supply_percentage: float = 0.0
+    bundle_curve_percentage: float = 0.0
     bundle_sol: float = 0.0
     
     # Optional fields with default values
